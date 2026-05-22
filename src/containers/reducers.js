@@ -6,6 +6,7 @@
 import CheckoutPage from './CheckoutPage/CheckoutPage.duck';
 import ContactDetailsPage from './ContactDetailsPage/ContactDetailsPage.duck';
 import EditListingPage from './EditListingPage/EditListingPage.duck';
+import IndividualDashboardPage from './IndividualDashboardPage/IndividualDashboardPage.duck';
 import InboxPage from './InboxPage/InboxPage.duck';
 import ListingPage from './ListingPage/ListingPage.duck';
 import MakeOfferPage from './MakeOfferPage/MakeOfferPage.duck';
@@ -20,12 +21,14 @@ import ProfileSettingsPage from './ProfileSettingsPage/ProfileSettingsPage.duck'
 import RequestQuotePage from './RequestQuotePage/RequestQuotePage.duck';
 import SearchPage from './SearchPage/SearchPage.duck';
 import StripePayoutPage from './StripePayoutPage/StripePayoutPage.duck';
+import TeamDashboardPage from './TeamDashboardPage/TeamDashboardPage.duck';
 import TransactionPage from './TransactionPage/TransactionPage.duck';
 
 export {
   CheckoutPage,
   ContactDetailsPage,
   EditListingPage,
+  IndividualDashboardPage,
   InboxPage,
   ListingPage,
   MakeOfferPage,
@@ -40,5 +43,6 @@ export {
   RequestQuotePage,
   SearchPage,
   StripePayoutPage,
+  TeamDashboardPage,
   TransactionPage,
 };

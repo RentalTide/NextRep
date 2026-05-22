@@ -151,3 +151,28 @@ export const createUserWithIdp = body => {
 export const deleteUserAccount = body => {
   return post('/api/delete-account', body);
 };
+
+// Resolve a NextRep team code to a team via the Integration API (server-side).
+// Used to verify that a join code belongs to a real team before storing it.
+//
+// See `server/api/team-lookup.js`. Body: { teamCode }.
+// Returns { verified, found, teamName }.
+export const lookupTeam = body => {
+  return post('/api/team/lookup', body);
+};
+
+// Fetch Team Admin dashboard metrics for the authenticated team account.
+//
+// See `server/api/team-stats.js`. Returns
+// { teamName, teamCode, memberCount, listedCount, soldCount, totalRevenue, integrationConfigured }.
+export const fetchTeamStats = () => {
+  return post('/api/team/stats', {});
+};
+
+// Resolve a batch of team codes to team names via the Integration API (server-side).
+//
+// See `server/api/team-names.js`. Body: { teamCodes }.
+// Returns { names: { [canonicalCode]: teamName } }.
+export const fetchTeamNames = teamCodes => {
+  return post('/api/team/names', { teamCodes });
+};

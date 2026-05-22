@@ -1,0 +1,190 @@
+.root {
+}
+
+.content {
+  max-width: 1056px;
+  margin: 0 auto;
+  padding: 24px 24px 64px 24px;
+
+  @media (--viewportMedium) {
+    padding: 48px 36px 96px 36px;
+  }
+}
+
+.heading {
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+.payoutNotice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px 22px;
+  margin-bottom: 28px;
+  border: 1px solid var(--colorGrey100);
+  border-radius: var(--borderRadiusMedium);
+  background-color: var(--colorGrey50);
+}
+
+.payoutCopy {
+  flex: 1 1 280px;
+}
+
+.payoutTitle {
+  margin: 0 0 4px 0;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey900);
+}
+
+.payoutText {
+  margin: 0;
+  color: var(--colorGrey700);
+  font-size: 14px;
+}
+
+.payoutButton {
+  flex: 0 0 auto;
+  padding: 10px 20px;
+  border-radius: var(--borderRadiusMedium);
+  background-color: var(--marketplaceColor);
+  color: var(--colorWhite);
+  font-weight: var(--fontWeightSemiBold);
+}
+
+.payoutButton:hover {
+  text-decoration: none;
+  background-color: var(--marketplaceColorDark);
+  color: var(--colorWhite);
+}
+
+.message {
+  color: var(--colorGrey700);
+}
+
+.error {
+  color: var(--colorFail);
+}
+
+.identity {
+  padding: 20px 24px;
+  background-color: var(--colorGrey50);
+  border: 1px solid var(--colorGrey100);
+  border-radius: var(--borderRadiusMedium);
+  margin-bottom: 28px;
+}
+
+.teamName {
+  margin: 0 0 12px 0;
+}
+
+.codeRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.codeLabel {
+  color: var(--colorGrey600);
+}
+
+.code {
+  font-weight: var(--fontWeightSemiBold);
+  letter-spacing: 2px;
+  color: var(--colorGrey900);
+}
+
+.copyButton {
+  width: auto;
+  color: var(--marketplaceColor);
+  font-weight: var(--fontWeightMedium);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+
+  @media (--viewportMedium) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px;
+  border: 1px solid var(--colorGrey100);
+  border-radius: var(--borderRadiusMedium);
+}
+
+.statValue {
+  font-size: 32px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey900);
+  line-height: 1;
+}
+
+.statLabel {
+  color: var(--colorGrey600);
+}
+
+.block {
+  margin-top: 32px;
+}
+
+.blockTitle {
+  margin: 0 0 12px 0;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.listItem {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--colorGrey100);
+  border-radius: var(--borderRadiusMedium);
+  margin-bottom: 8px;
+}
+
+.listLink {
+  color: var(--colorGrey900);
+}
+
+.listLink:hover {
+  text-decoration: none;
+  color: var(--marketplaceColor);
+}
+
+.listTitle {
+  font-weight: var(--fontWeightMedium);
+  color: inherit;
+}
+
+.listMeta {
+  color: var(--colorGrey600);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.empty {
+  color: var(--colorGrey500);
+  margin: 0;
+}
+
+.note {
+  margin-top: 24px;
+  color: var(--colorGrey500);
+  font-size: 14px;
+}

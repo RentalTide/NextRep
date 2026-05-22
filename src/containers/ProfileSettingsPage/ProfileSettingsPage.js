@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 
@@ -13,7 +13,14 @@ import {
   pickUserFieldsData,
   showCreateListingLinkForUser,
 } from '../../util/userHelpers';
+import {
+  isTeamAccount,
+  isIndividualAccount,
+  getTeamCode,
+  getJoinedTeamCodes,
+} from '../../util/teams';
 import { isScrollingDisabled } from '../../ducks/ui.duck';
+import { ensureTeamCode, joinTeam, leaveTeam, loadTeamNames } from '../../ducks/team.duck';
 
 import { H3, Page, UserNav, NamedLink, LayoutSingleColumn } from '../../components';
 
@@ -21,6 +28,7 @@ import TopbarContainer from '../../containers/TopbarContainer/TopbarContainer';
 import FooterContainer from '../../containers/FooterContainer/FooterContainer';
 
 import ProfileSettingsForm from './ProfileSettingsForm/ProfileSettingsForm';
+import TeamSection from './TeamSection/TeamSection';
 
 import { updateProfile, uploadImage } from './ProfileSettingsPage.duck';
 import css from './ProfileSettingsPage.module.css';
@@ -77,12 +85,38 @@ export const ProfileSettingsPageComponent = props => {
     image,
     onImageUpload,
     onUpdateProfile,
+    onEnsureTeamCode,
+    onJoinTeam,
+    onLeaveTeam,
+    onLoadTeamNames,
+    joinInProgress,
+    joinError,
+    teamNames,
     scrollingDisabled,
     updateInProgress,
     updateProfileError,
     uploadImageError,
     uploadInProgress,
   } = props;
+
+  // A Team account is issued a join code on account creation. As a fallback, generate one
+  // the first time an existing team without a code visits this page. Guarded so it runs once.
+  const ensureCodeRequested = useRef(false);
+  useEffect(() => {
+    if (isTeamAccount(currentUser) && !getTeamCode(currentUser) && !ensureCodeRequested.current) {
+      ensureCodeRequested.current = true;
+      onEnsureTeamCode();
+    }
+  }, [currentUser, onEnsureTeamCode]);
+
+  // Resolve names for the teams an individual has joined, so the list can show names not codes.
+  const joinedCodesKey = getJoinedTeamCodes(currentUser).join(',');
+  useEffect(() => {
+    if (isIndividualAccount(currentUser)) {
+      onLoadTeamNames(getJoinedTeamCodes(currentUser));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onLoadTeamNames, joinedCodesKey]);
 
   const { userFields, userTypes = [] } = config.user;
   const publicUserFields = userFields.filter(uf => uf.scope === 'public');
@@ -182,6 +216,15 @@ export const ProfileSettingsPageComponent = props => {
             <ViewProfileLink userUUID={user?.id?.uuid} isUnauthorizedUser={isUnauthorizedUser} />
           </div>
           {profileSettingsForm}
+
+          <TeamSection
+            currentUser={currentUser}
+            onJoinTeam={onJoinTeam}
+            onLeaveTeam={onLeaveTeam}
+            joinInProgress={joinInProgress}
+            joinError={joinError}
+            teamNames={teamNames}
+          />
         </div>
       </LayoutSingleColumn>
     </Page>
@@ -197,6 +240,7 @@ const mapStateToProps = state => {
     updateInProgress,
     updateProfileError,
   } = state.ProfileSettingsPage;
+  const { joinInProgress, joinError, teamNames } = state.team;
   return {
     currentUser,
     image,
@@ -205,12 +249,19 @@ const mapStateToProps = state => {
     updateProfileError,
     uploadImageError,
     uploadInProgress,
+    joinInProgress,
+    joinError,
+    teamNames,
   };
 };
 
 const mapDispatchToProps = dispatch => ({
   onImageUpload: data => dispatch(uploadImage(data)),
   onUpdateProfile: data => dispatch(updateProfile(data)),
+  onEnsureTeamCode: () => dispatch(ensureTeamCode()),
+  onJoinTeam: code => dispatch(joinTeam(code)),
+  onLeaveTeam: code => dispatch(leaveTeam(code)),
+  onLoadTeamNames: codes => dispatch(loadTeamNames(codes)),
 });
 
 const ProfileSettingsPage = compose(
