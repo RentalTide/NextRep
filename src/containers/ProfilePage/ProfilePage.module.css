@@ -108,6 +108,36 @@
   }
 }
 
+.teamsSection {
+  border-top: 1px solid var(--colorGrey100);
+  padding-top: 20px;
+  margin-bottom: 24px;
+}
+
+.teamsTitle {
+  color: var(--colorGrey700);
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.teams {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.team {
+  padding: 6px 14px;
+  background-color: var(--colorGrey50);
+  border: 1px solid var(--colorGrey100);
+  border-radius: var(--borderRadiusMedium);
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey800);
+}
+
 .listingsContainer {
   composes: clearfix from global;
   border-top: 1px solid var(--colorGrey100);

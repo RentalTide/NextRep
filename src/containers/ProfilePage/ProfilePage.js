@@ -28,9 +28,11 @@ import {
   isUserAuthorized,
 } from '../../util/userHelpers';
 import { richText } from '../../util/richText';
+import { getJoinedTeamCodes, formatTeamCode } from '../../util/teams';
 
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 import { getMarketplaceEntities } from '../../ducks/marketplaceData.duck';
+import { loadTeamNames } from '../../ducks/team.duck';
 import {
   Heading,
   H2,
@@ -261,7 +263,19 @@ export const MainContent = props => {
     intl,
     hideReviews,
     userTypeRoles,
+    teamNames = {},
+    onLoadTeamNames,
   } = props;
+
+  // Teams this member belongs to (a public field per spec). Resolve codes to names for display.
+  const teamCodes = getJoinedTeamCodes({ attributes: { profile: { publicData } } });
+  const teamCodesKey = teamCodes.join(',');
+  useEffect(() => {
+    if (teamCodes.length > 0 && onLoadTeamNames) {
+      onLoadTeamNames(teamCodes);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onLoadTeamNames, teamCodesKey]);
 
   const hasListings = listings.length > 0;
   const hasMatchMedia = typeof window !== 'undefined' && window?.matchMedia;
@@ -302,6 +316,21 @@ export const MainContent = props => {
           userFieldConfig={userFieldConfig}
           intl={intl}
         />
+      ) : null}
+
+      {teamCodes.length > 0 ? (
+        <div className={css.teamsSection}>
+          <H4 as="h2" className={css.teamsTitle}>
+            <FormattedMessage id="ProfilePage.teamsTitle" />
+          </H4>
+          <ul className={css.teams}>
+            {teamCodes.map(code => (
+              <li key={code} className={css.team}>
+                {teamNames[code] || formatTeamCode(code)}
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
 
       {hasListings ? (
@@ -521,9 +550,19 @@ const mapStateToProps = state => {
     listings: getMarketplaceEntities(state, userListingRefs),
     reviews,
     queryReviewsError,
+    teamNames: state.team.teamNames,
   };
 };
 
-const ProfilePage = compose(connect(mapStateToProps))(ProfilePageComponent);
+const mapDispatchToProps = dispatch => ({
+  onLoadTeamNames: codes => dispatch(loadTeamNames(codes)),
+});
+
+const ProfilePage = compose(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )
+)(ProfilePageComponent);
 
 export default ProfilePage;
