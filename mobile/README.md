@@ -1,22 +1,34 @@
 # NextRep Mobile (Expo)
 
-React Native (Expo) shell that wraps the NextRep web app at
-`https://nextrep-fd6a57ecb582.herokuapp.com/` in a `WebView`. The web app is unchanged; this shell
-provides the native capabilities a WebView can't:
+React Native (Expo, SDK 54) shell that wraps the NextRep web app
+(`https://nextrep-fd6a57ecb582.herokuapp.com/`) in a `WebView` and adds native chrome on top of it.
+This mirrors the FarmFed app that passed Apple App Review — the native UI is what satisfies
+Guideline 4.2 ("more than a repackaged website").
 
-- Push notifications (Expo Notifications → server uses `expo-server-sdk`)
-- Native haptics
-- Native image picker (camera + library) for the listing photos editor
-- External link handling (off-site links open in the system browser)
+What the shell adds:
 
-> **Note:** the native bridge (push tokens, haptics, camera) needs matching code on the web/server
-> side — see [Native bridge protocol](#native-bridge-protocol). NextRep's web app does **not** wire
-> this up yet, so those features are no-ops until it does; the app still loads and runs the site
-> normally. Use FarmFed's `src/util/pushNotifications.js`, `src/util/nativeBridge.js`,
-> `server/api/device-tokens.js`, and `server/api-util/pushSender.js` as the reference implementation.
+- **Native bottom tab bar** — Home, Search, Sell, Inbox, Profile. Tapping a tab navigates the
+  WebView (`/`, `/s`, `/l/new`, `/inbox/sales`, `/profile-settings` — the standard Sharetribe
+  routes) and fires a haptic. The active tab stays in sync with in-app navigation via injected
+  SPA URL tracking.
+- **Push notifications** — registers an Expo push token, injects it into the web app, and deep-links
+  to a listing when a notification is tapped.
+- **Native share sheet, camera / photo picker, and haptics** via a small web↔native bridge.
+- **Loading + offline/error screen** with a Retry button.
 
-The icon, splash, adaptive icon, and notification icon were generated from `public/nextrep.avif`
-(brand cream `#FAF6F5`, lime `#BEFD6E`, near-black `#232222`).
+Branding (icon, splash, adaptive icon, notification icon, error logo) was generated from
+`public/nextrep.avif` — brand cream `#FAF6F5`, lime `#BEFD6E`, near-black `#232222`.
+
+> **Note on the bridge:** push/haptics/camera/share need matching code on the web/server side.
+> NextRep's web app doesn't wire that up yet, so those features are no-ops until it does — the tab
+> bar and site browsing work regardless. Use FarmFed's `src/util/pushNotifications.js`,
+> `src/util/nativeBridge.js`, `server/api/device-tokens.js`, and `server/api-util/pushSender.js` as
+> the reference implementation.
+
+## Configuration
+
+- **Site URL:** `app.json` → `expo.extra.siteUrl` (falls back to the Heroku URL in `App.tsx`).
+- **Tabs:** the `TABS` array in `App.tsx`.
 
 ## Prerequisites
 
@@ -24,12 +36,8 @@ The icon, splash, adaptive icon, and notification icon were generated from `publ
 npm install -g eas-cli
 ```
 
-You also need:
-
-- An **Apple Developer** account with the `com.nextrep.app` Identifier and Push Notifications
-  capability enabled.
-- A **Google Play Console** account (for Android submission).
-- An **Expo** account (free).
+You also need an **Apple Developer** account (Identifier `com.nextrep.app`, Push Notifications
+capability), a **Google Play Console** account, and a free **Expo** account.
 
 ## Local development
 
@@ -40,45 +48,27 @@ npx expo start
 ```
 
 Open Expo Go on a real device and scan the QR code. Push notifications WON'T work in Expo Go — they
-require a development build (see below).
-
-The site URL lives in `app.json` under `expo.extra.siteUrl` (and as a fallback default in `App.tsx`).
-Change it there to point the shell at a different environment.
+require a development/production build.
 
 ## First-time EAS setup
 
-This project has no EAS `projectId` yet (the FarmFed one was intentionally not carried over). Create
-a fresh one:
+This project ships without an EAS `projectId` (FarmFed's was intentionally not carried over). Create
+a fresh one — it writes `expo.extra.eas.projectId` into `app.json`, which the push-token code reads:
 
 ```bash
 eas login
-eas project:init      # writes the new projectId into app.json
-# optional, for OTA updates:
-eas update:configure
+eas project:init
 ```
 
 ## Building & submitting
 
 ```bash
-# Build (uses EAS Build cloud service; ~15 min per platform)
 eas build --platform ios --profile production
 eas build --platform android --profile production
 
-# Submit to stores (after editing eas.json with your Apple ID / team ID)
 eas submit --platform ios --latest
 eas submit --platform android --latest
 ```
-
-EAS prompts for Apple credentials on first iOS build and stores them in your Expo account.
-
-## Notification flow
-
-1. App launches → `App.tsx` calls `Notifications.getExpoPushTokenAsync()`
-2. Token is injected into the WebView as `window.__EXPO_PUSH_TOKEN__`
-3. Web app reads it and POSTs to `/api/device-tokens` *(not yet implemented on NextRep — see note above)*
-4. Server stores token (e.g. `server/data/device-tokens.json`)
-5. When a relevant transaction transition happens, server calls `sendPushNotifications`
-6. Expo Push Service relays to APNs / FCM → device shows banner
 
 ## Native bridge protocol
 
@@ -86,7 +76,8 @@ Web → Native messages (via `window.ReactNativeWebView.postMessage`):
 
 | `type` | `payload` | Returns |
 |---|---|---|
+| `urlChanged` | `{ url }` | (keeps the active tab in sync) |
 | `requestPushToken` | — | `{ token, platform }` |
-| `haptic` | `{ style: 'light' \| 'medium' \| 'heavy' \| 'success' \| 'warning' \| 'error' }` | (fire-and-forget) |
-| `camera` | `{ source: 'camera' \| 'library' }` | `{ uri, base64, mimeType }` or `null` if cancelled |
-| `share` | `{ title, text, url }` | `{ ok: true }` |
+| `haptic` | `{ style: 'light' \| 'medium' \| 'success' }` | (fire-and-forget) |
+| `camera` | `{ source: 'camera' \| 'library' }` | `{ dataUrl, format }` |
+| `share` | `{ title, url }` | `{ success: true }` |

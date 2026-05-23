@@ -15,8 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.nextrep.app",
-      "buildNumber": "1",
+      "bundleIdentifier": "com.rentaltide.nextrep",
       "infoPlist": {
         "NSCameraUsageDescription": "NextRep needs access to your camera to take photos for listings.",
         "NSPhotoLibraryUsageDescription": "NextRep needs access to your photo library to upload images for listings.",
@@ -29,8 +28,7 @@
         "backgroundColor": "#FAF6F5"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.nextrep.app",
-      "versionCode": 1,
+      "package": "com.rentaltide.nextrep",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
@@ -44,7 +42,8 @@
         "expo-image-picker",
         {
           "photosPermission": "NextRep needs access to your photos to upload images for listings.",
-          "cameraPermission": "NextRep needs access to your camera to take photos for listings."
+          "cameraPermission": "NextRep needs access to your camera to take photos for listings.",
+          "microphonePermission": false
         }
       ],
       [
@@ -53,13 +52,20 @@
           "icon": "./assets/notification-icon.png",
           "color": "#232222"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "extra": {
-      "siteUrl": "https://nextrep-fd6a57ecb582.herokuapp.com/"
+      "siteUrl": "https://nextrep-fd6a57ecb582.herokuapp.com/",
+      "eas": {
+        "projectId": "07e79880-fe33-4865-899b-a78e7291161a"
+      }
     },
     "runtimeVersion": {
       "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/07e79880-fe33-4865-899b-a78e7291161a"
     }
   }
 }
