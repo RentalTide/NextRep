@@ -42,6 +42,8 @@ const initialState = {
   joinError: null,
   // Map of canonical team code -> team name, populated lazily for display.
   teamNames: {},
+  // Map of canonical team code -> team account uuid, for linking to the team's public profile.
+  teamIds: {},
 };
 
 const teamSlice = createSlice({
@@ -71,7 +73,9 @@ const teamSlice = createSlice({
       state.joinError = action.payload;
     },
     setTeamNames: (state, action) => {
-      state.teamNames = { ...state.teamNames, ...action.payload };
+      const { names = {}, ids = {} } = action.payload || {};
+      state.teamNames = { ...state.teamNames, ...names };
+      state.teamIds = { ...state.teamIds, ...ids };
     },
   },
 });
@@ -204,23 +208,24 @@ export const joinTeam = rawCode => (dispatch, getState, sdk) => {
 };
 
 /**
- * Resolve a list of team codes to names (for display) and cache them in state.team.teamNames.
+ * Resolve a list of team codes to names (for display) and account ids (for linking to each
+ * team's public profile), and cache them in state.team.teamNames / state.team.teamIds.
  * Best-effort: failures are swallowed so the UI just falls back to showing the code.
  * @param {String[]} codes canonical team codes
- * @returns {Function} thunk resolving to the names map
+ * @returns {Function} thunk resolving to { names, ids }
  */
 export const loadTeamNames = codes => dispatch => {
   const list = Array.isArray(codes) ? codes : [];
   if (list.length === 0) {
-    return Promise.resolve({});
+    return Promise.resolve({ names: {}, ids: {} });
   }
   return fetchTeamNames(list)
-    .then(({ names }) => {
-      const resolved = names || {};
+    .then(({ names, ids }) => {
+      const resolved = { names: names || {}, ids: ids || {} };
       dispatch(setTeamNames(resolved));
       return resolved;
     })
-    .catch(() => ({}));
+    .catch(() => ({ names: {}, ids: {} }));
 };
 
 /**

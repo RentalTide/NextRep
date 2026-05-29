@@ -213,6 +213,7 @@
     "dev-frontend": "node scripts/start.js",
     "dev-backend": "nodemon server/apiServer.js",
     "dev": "yarn run config-check&&cross-env NODE_ENV=development REACT_APP_DEV_API_SERVER_PORT=3500 concurrently --kill-others \"yarn run dev-frontend\" \"yarn run dev-backend\"",
+    "dev-alt": "yarn run config-check&&cross-env NODE_ENV=development PORT=3100 REACT_APP_DEV_API_SERVER_PORT=3600 REACT_APP_MARKETPLACE_ROOT_URL=http://localhost:3100 concurrently --kill-others \"yarn run dev-frontend\" \"yarn run dev-backend\"",
     "build": "yarn build-web&&yarn build-server",
     "build-web": "node scripts/build.js",
     "build-server": "node scripts/build-server.js",

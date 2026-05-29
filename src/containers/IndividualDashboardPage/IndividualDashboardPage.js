@@ -40,9 +40,15 @@ const labelForSport = (userFields, value) => {
 const Chips = ({ items, emptyId }) =>
   items.length > 0 ? (
     <ul className={css.chips}>
-      {items.map(({ key, label }) => (
+      {items.map(({ key, label, link }) => (
         <li key={key} className={css.chip}>
-          {label}
+          {link ? (
+            <NamedLink className={css.chipLink} name={link.name} params={link.params}>
+              {label}
+            </NamedLink>
+          ) : (
+            label
+          )}
         </li>
       ))}
     </ul>
@@ -73,7 +79,8 @@ export const IndividualDashboardPageComponent = props => {
     totalRevenue,
     currency,
     queryInProgress,
-    teamNames,
+    teamNames = {},
+    teamIds = {},
     onLoadTeamNames,
   } = props;
 
@@ -93,10 +100,15 @@ export const IndividualDashboardPageComponent = props => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onLoadTeamNames, joinedKey]);
 
-  const teams = joinedCodes.map(code => ({
-    key: code,
-    label: teamNames[code] || formatTeamCode(code),
-  }));
+  const teams = joinedCodes.map(code => {
+    const teamId = teamIds[code];
+    return {
+      key: code,
+      label: teamNames[code] || formatTeamCode(code),
+      // Link to the team's public profile when we've resolved its account id.
+      link: teamId ? { name: 'ProfilePage', params: { id: teamId } } : null,
+    };
+  });
   const sportValues = Array.isArray(publicData.sport) ? publicData.sport : [];
   const sports = sportValues.map(v => ({ key: v, label: labelForSport(userFields, v) }));
 
@@ -226,6 +238,7 @@ const mapStateToProps = state => {
     currency,
     queryInProgress,
     teamNames: state.team.teamNames,
+    teamIds: state.team.teamIds,
   };
 };
 

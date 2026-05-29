@@ -49,6 +49,7 @@ describe('team duck', () => {
         joinInProgress: false,
         joinError: null,
         teamNames: {},
+        teamIds: {},
       });
     });
   });
@@ -155,19 +156,28 @@ describe('team duck', () => {
   });
 
   describe('loadTeamNames', () => {
-    it('resolves names and caches them in state', async () => {
-      fetchTeamNames.mockResolvedValueOnce({ names: { NRDEMOAB2: 'Seattle Little League' } });
+    it('resolves names and ids and caches them in state', async () => {
+      fetchTeamNames.mockResolvedValueOnce({
+        names: { NRDEMOAB2: 'Seattle Little League' },
+        ids: { NRDEMOAB2: 'team-user-id' },
+      });
       const dispatch = createFakeDispatch(stateWithUser(individualUser()), makeSdk());
       const result = await dispatch(loadTeamNames(['NRDEMOAB2']));
-      expect(result).toEqual({ NRDEMOAB2: 'Seattle Little League' });
+      expect(result).toEqual({
+        names: { NRDEMOAB2: 'Seattle Little League' },
+        ids: { NRDEMOAB2: 'team-user-id' },
+      });
       const setAction = dispatchedActions(dispatch).find(a => a.type === 'team/setTeamNames');
-      expect(setAction.payload).toEqual({ NRDEMOAB2: 'Seattle Little League' });
+      expect(setAction.payload).toEqual({
+        names: { NRDEMOAB2: 'Seattle Little League' },
+        ids: { NRDEMOAB2: 'team-user-id' },
+      });
     });
 
     it('is a no-op for an empty list', async () => {
       const dispatch = createFakeDispatch(stateWithUser(individualUser()), makeSdk());
       const result = await dispatch(loadTeamNames([]));
-      expect(result).toEqual({});
+      expect(result).toEqual({ names: {}, ids: {} });
       expect(fetchTeamNames).not.toHaveBeenCalled();
     });
   });

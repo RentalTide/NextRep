@@ -172,7 +172,7 @@ export const fetchTeamStats = () => {
 // Resolve a batch of team codes to team names via the Integration API (server-side).
 //
 // See `server/api/team-names.js`. Body: { teamCodes }.
-// Returns { names: { [canonicalCode]: teamName } }.
+// Returns { names: { [canonicalCode]: teamName }, ids: { [canonicalCode]: teamUserId } }.
 export const fetchTeamNames = teamCodes => {
   return post('/api/team/names', { teamCodes });
 };
