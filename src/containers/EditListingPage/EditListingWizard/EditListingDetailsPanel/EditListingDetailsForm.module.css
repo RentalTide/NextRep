@@ -64,6 +64,11 @@
   display: none;
 }
 
+.teamCodes {
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
 .submitButton {
   margin-top: auto;
   margin-bottom: 24px;

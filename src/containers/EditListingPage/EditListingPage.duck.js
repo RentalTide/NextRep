@@ -31,10 +31,19 @@ const { UUID } = sdkTypes;
 
 // Stamp the seller's team code(s) into the listing's public data so team dashboards can find
 // member- and team-posted gear via a `pub_teamCodes` query. See src/util/teams.js.
-const withSellerTeamCodes = (values, currentUser) => ({
-  ...values,
-  publicData: { ...(values.publicData || {}), teamCodes: getSellerTeamCodes(currentUser) },
-});
+//
+// If the submit already carries an explicit `teamCodes` selection (the details-panel team picker
+// for Individual sellers — including an empty array meaning "no team"), respect it. Otherwise fall
+// back to the seller's own code(s): a team account stamps its own code; an individual without a
+// picker stamps every team they belong to.
+const withSellerTeamCodes = (values, currentUser) => {
+  const provided = values?.publicData?.teamCodes;
+  const teamCodes = Array.isArray(provided) ? provided : getSellerTeamCodes(currentUser);
+  return {
+    ...values,
+    publicData: { ...(values.publicData || {}), teamCodes },
+  };
+};
 
 // Create array of N items where indexing starts from 1
 const getArrayOfNItems = n =>

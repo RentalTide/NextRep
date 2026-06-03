@@ -252,6 +252,9 @@ const getInitialValues = (
   return {
     title,
     description,
+    // NextRep: which teams this listing belongs to (Individual sellers pick; see
+    // EditListingTeamCodesField). Undefined for new listings -> the field pre-checks all teams.
+    ...(publicData?.teamCodes ? { teamCodes: publicData.teamCodes } : {}),
     ...nestedCategories,
     // Transaction type info: listingType, transactionProcessAlias, unitType
     ...getTransactionInfo({ listingTypes, existingListingTypeInfo, preselectedListingType }),
@@ -415,6 +418,14 @@ const EditListingDetailsPanel = props => {
               nestedCategories,
               listingFields
             );
+            // NextRep: the team picker (EditListingTeamCodesField) stores selected team codes on
+            // `rest.teamCodes`. Carry an explicit selection (including an empty array, meaning "no
+            // team") into publicData; `withSellerTeamCodes` in the duck respects it. When absent
+            // (team accounts / no picker), the duck falls back to the seller's own code(s).
+            const teamCodesMaybe = Array.isArray(rest.teamCodes)
+              ? { teamCodes: rest.teamCodes }
+              : {};
+
             // New values for listing attributes
             const updateValues = {
               title: title.trim(),
@@ -425,6 +436,7 @@ const EditListingDetailsPanel = props => {
                 unitType,
                 ...cleanedNestedCategories,
                 ...publicListingFields,
+                ...teamCodesMaybe,
               },
               privateData: privateListingFields,
               ...setNoAvailabilityForUnbookableListings(transactionProcessAlias),

@@ -115,7 +115,14 @@ export const TeamDashboardPageComponent = props => {
                       />
                     </InlineTextButton>
                   </div>
-                ) : null}
+                ) : (
+                  <p className={css.empty}>
+                    <FormattedMessage id="TeamDashboardPage.noCodeYet" />{' '}
+                    <NamedLink name="ProfileSettingsPage">
+                      <FormattedMessage id="TeamDashboardPage.noCodeLink" />
+                    </NamedLink>
+                  </p>
+                )}
               </section>
 
               {!currentUser?.stripeAccount && stats.listedCount > 0 ? (
@@ -169,7 +176,11 @@ export const TeamDashboardPageComponent = props => {
                   <ul className={css.list}>
                     {stats.members.map(m => (
                       <li key={m.id} className={css.listItem}>
-                        <NamedLink className={css.listLink} name="ProfilePage" params={{ id: m.id }}>
+                        <NamedLink
+                          className={css.listLink}
+                          name="ProfilePage"
+                          params={{ id: m.id }}
+                        >
                           {m.name || <FormattedMessage id="TeamDashboardPage.unnamedMember" />}
                         </NamedLink>
                       </li>

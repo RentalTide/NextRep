@@ -25,6 +25,7 @@ import {
   CustomExtendedDataField,
 } from '../../../../components';
 // Import modules from this directory
+import EditListingTeamCodesField from './EditListingTeamCodesField';
 import css from './EditListingDetailsForm.module.css';
 
 const TITLE_MAX_LENGTH = 60;
@@ -462,6 +463,10 @@ const EditListingDetailsForm = props => (
               formId={formId}
               intl={intl}
             />
+          )}
+
+          {showListingFields && isCompatibleCurrency && (
+            <EditListingTeamCodesField formId={formId} />
           )}
 
           {!isCompatibleCurrency && listingType && (
