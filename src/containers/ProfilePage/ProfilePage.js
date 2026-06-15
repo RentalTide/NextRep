@@ -264,6 +264,7 @@ export const MainContent = props => {
     hideReviews,
     userTypeRoles,
     teamNames = {},
+    teamIds = {},
     onLoadTeamNames,
   } = props;
 
@@ -324,11 +325,21 @@ export const MainContent = props => {
             <FormattedMessage id="ProfilePage.teamsTitle" />
           </H4>
           <ul className={css.teams}>
-            {teamCodes.map(code => (
-              <li key={code} className={css.team}>
-                {teamNames[code] || formatTeamCode(code)}
-              </li>
-            ))}
+            {teamCodes.map(code => {
+              const label = teamNames[code] || formatTeamCode(code);
+              const teamId = teamIds[code];
+              return (
+                <li key={code} className={css.team}>
+                  {teamId ? (
+                    <NamedLink name="ProfilePage" params={{ id: teamId }}>
+                      {label}
+                    </NamedLink>
+                  ) : (
+                    label
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
       ) : null}
@@ -551,6 +562,7 @@ const mapStateToProps = state => {
     reviews,
     queryReviewsError,
     teamNames: state.team.teamNames,
+    teamIds: state.team.teamIds,
   };
 };
 
