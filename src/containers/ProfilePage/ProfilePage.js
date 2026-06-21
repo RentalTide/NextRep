@@ -28,7 +28,7 @@ import {
   isUserAuthorized,
 } from '../../util/userHelpers';
 import { richText } from '../../util/richText';
-import { getJoinedTeamCodes, formatTeamCode } from '../../util/teams';
+import { getJoinedTeamCodes, formatTeamCode, isTeamAccount, getTeamName } from '../../util/teams';
 
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 import { getMarketplaceEntities } from '../../ducks/marketplaceData.duck';
@@ -253,6 +253,8 @@ export const MainContent = props => {
     userShowError,
     bio,
     displayName,
+    headingName,
+    isTeamProfile,
     listings,
     queryListingsError,
     reviews = [],
@@ -268,6 +270,11 @@ export const MainContent = props => {
     onLoadTeamNames,
   } = props;
 
+  // On a team page, surface the newest gear first and collapse to the top few with an expand
+  // toggle so the page stays scannable when the team has a lot of listings.
+  const TEAM_LISTINGS_PREVIEW_COUNT = 5;
+  const [showAllListings, setShowAllListings] = useState(false);
+
   // Teams this member belongs to (a public field per spec). Resolve codes to names for display.
   const teamCodes = getJoinedTeamCodes({ attributes: { profile: { publicData } } });
   const teamCodesKey = teamCodes.join(',');
@@ -279,6 +286,12 @@ export const MainContent = props => {
   }, [onLoadTeamNames, teamCodesKey]);
 
   const hasListings = listings.length > 0;
+  // Team pages collapse to the newest few gear items until the visitor expands the full list.
+  const canExpandListings = isTeamProfile && listings.length > TEAM_LISTINGS_PREVIEW_COUNT;
+  const visibleListings =
+    canExpandListings && !showAllListings
+      ? listings.slice(0, TEAM_LISTINGS_PREVIEW_COUNT)
+      : listings;
   const hasMatchMedia = typeof window !== 'undefined' && window?.matchMedia;
   const isMobileLayout =
     mounted && hasMatchMedia
@@ -306,7 +319,11 @@ export const MainContent = props => {
   return (
     <div>
       <H2 as="h1" className={css.desktopHeading}>
-        <FormattedMessage id="ProfilePage.desktopHeading" values={{ name: displayName }} />
+        {isTeamProfile ? (
+          headingName
+        ) : (
+          <FormattedMessage id="ProfilePage.desktopHeading" values={{ name: displayName }} />
+        )}
       </H2>
       {hasBio ? <p className={css.bio}>{bioWithLinks}</p> : null}
 
@@ -347,15 +364,34 @@ export const MainContent = props => {
       {hasListings ? (
         <div className={listingsContainerClasses}>
           <H4 as="h2" className={css.listingsTitle}>
-            <FormattedMessage id="ProfilePage.listingsTitle" values={{ count: listings.length }} />
+            <FormattedMessage
+              id={isTeamProfile ? 'ProfilePage.teamListingsTitle' : 'ProfilePage.listingsTitle'}
+              values={{ count: listings.length }}
+            />
           </H4>
           <ul className={css.listings}>
-            {listings.map(l => (
+            {visibleListings.map(l => (
               <li className={css.listing} key={l.id.uuid}>
-                <ListingCard listing={l} showAuthorInfo={false} />
+                <ListingCard listing={l} showAuthorInfo={isTeamProfile} />
               </li>
             ))}
           </ul>
+          {canExpandListings ? (
+            <button
+              type="button"
+              className={css.showAllListingsButton}
+              onClick={() => setShowAllListings(prev => !prev)}
+            >
+              {showAllListings ? (
+                <FormattedMessage id="ProfilePage.showFewerListings" />
+              ) : (
+                <FormattedMessage
+                  id="ProfilePage.showAllListings"
+                  values={{ count: listings.length }}
+                />
+              )}
+            </button>
+          ) : null}
         </div>
       ) : null}
       {hideReviews ? null : isMobileLayout ? (
@@ -428,6 +464,9 @@ export const ProfilePageComponent = props => {
   const isCurrentUser = currentUser?.id && currentUser?.id?.uuid === pathParams.id;
   const profileUser = useCurrentUser ? currentUser : user;
   const { bio, displayName, publicData, metadata } = profileUser?.attributes?.profile || {};
+  // A Team account's profile shows the team name as the page heading and lists the team's gear.
+  const isTeamProfile = isTeamAccount(profileUser);
+  const headingName = isTeamProfile ? getTeamName(profileUser) || displayName : displayName;
   const { userFields } = config.user;
   const isPrivateMarketplace = config.accessControl.marketplace.private === true;
   const isUnauthorizedUser = currentUser && !isUserAuthorized(currentUser);
@@ -444,7 +483,7 @@ export const ProfilePageComponent = props => {
     ? currentUser != null || userShowError != null
     : user != null || userShowError != null;
 
-  const schemaTitleVars = { name: displayName, marketplaceName: config.marketplaceName };
+  const schemaTitleVars = { name: headingName, marketplaceName: config.marketplaceName };
   const schemaTitle = intl.formatMessage({ id: 'ProfilePage.schemaTitle' }, schemaTitleVars);
 
   if (!isDataLoaded) {
@@ -511,7 +550,7 @@ export const ProfilePageComponent = props => {
           <AsideContent
             user={profileUser}
             showLinkToProfileSettingsPage={mounted && isCurrentUser}
-            displayName={displayName}
+            displayName={headingName}
           />
         }
         footer={<FooterContainer />}
@@ -519,6 +558,8 @@ export const ProfilePageComponent = props => {
         <MainContent
           bio={bio}
           displayName={displayName}
+          headingName={headingName}
+          isTeamProfile={isTeamProfile}
           userShowError={userShowError}
           publicData={publicData}
           metadata={metadata}

@@ -49,6 +49,17 @@ export const isIndividualAccount = user => getUserTypeId(user) === INDIVIDUAL_US
 export const getTeamCode = user => user?.attributes?.profile?.publicData?.teamCode;
 
 /**
+ * The display name of a Team account: the custom team-name field if set, otherwise the
+ * account's display name. Mirrors the resolution used server-side in server/api/team-names.js.
+ * @param {Object} user API entity
+ * @returns {String|undefined} the team's display name
+ */
+export const getTeamName = user => {
+  const profile = user?.attributes?.profile;
+  return profile?.publicData?.teamnamecustom || profile?.displayName;
+};
+
+/**
  * The list of team codes an individual has joined.
  * @param {Object} user API entity
  * @returns {String[]} canonical team codes (empty array if none)

@@ -6,6 +6,7 @@ import { PROFILE_PAGE_PENDING_APPROVAL_VARIANT } from '../../util/urlHelpers';
 import { denormalisedResponseEntities } from '../../util/data';
 import { storableError } from '../../util/errors';
 import { hasPermissionToViewData, isUserAuthorized } from '../../util/userHelpers';
+import { isTeamAccount, getTeamCode } from '../../util/teams';
 
 const { UUID } = sdkTypes;
 
@@ -43,7 +44,7 @@ export const showUser = (userId, config) => dispatch => {
 // Query User Listings //
 /////////////////////////
 const queryUserListingsPayloadCreator = (
-  { userId, config, ownProfileOnly = false },
+  { userId, config, ownProfileOnly = false, teamCode = null },
   { dispatch, rejectWithValue, extra: sdk }
 ) => {
   const {
@@ -60,9 +61,18 @@ const queryUserListingsPayloadCreator = (
     ...createImageVariantConfig(`${variantPrefix}-2x`, 800, aspectRatio),
   };
 
+  // A Team account posts no gear itself; its members do, stamping each listing's
+  // publicData.teamCodes with the team code. So a team profile lists every member listing
+  // tagged with its code (newest first), not listings authored by the team account.
   const listingsPromise = ownProfileOnly
     ? sdk.ownListings.query({
         states: ['published'],
+        ...queryParams,
+      })
+    : teamCode
+    ? sdk.listings.query({
+        pub_teamCodes: teamCode,
+        sort: '-createdAt',
         ...queryParams,
       })
     : sdk.listings.query({
@@ -91,8 +101,13 @@ export const queryUserListingsThunk = createAsyncThunk(
 );
 
 // Backward compatible wrapper for the thunk
-export const queryUserListings = (userId, config, ownProfileOnly = false) => dispatch => {
-  return dispatch(queryUserListingsThunk({ userId, config, ownProfileOnly }));
+export const queryUserListings = (
+  userId,
+  config,
+  ownProfileOnly = false,
+  teamCode = null
+) => dispatch => {
+  return dispatch(queryUserListingsThunk({ userId, config, ownProfileOnly, teamCode }));
 };
 
 //////////////////////////
@@ -251,10 +266,22 @@ export const loadData = (params, search, config) => (dispatch, getState, sdk) =>
     ]);
   }
 
+  // Load the profile user first: a Team account's listings are its members' gear (tagged with
+  // the team code), so we need the resolved user before we know which listings to query.
   return Promise.all([
     dispatch(fetchCurrentUser(fetchCurrentUserOptions)),
-    dispatch(showUser(userId, config)),
-    dispatch(queryUserListings(userId, config)),
+    dispatch(showUser(userId, config)).then(action => {
+      const response = action?.payload;
+      const isFulfilled = action?.type?.endsWith('/fulfilled');
+      let teamCode = null;
+      if (isFulfilled && response?.data) {
+        const profileUser = denormalisedResponseEntities(response)[0];
+        if (profileUser && isTeamAccount(profileUser)) {
+          teamCode = getTeamCode(profileUser);
+        }
+      }
+      return dispatch(queryUserListings(userId, config, false, teamCode));
+    }),
     dispatch(queryUserReviews(userId)),
   ]);
 };

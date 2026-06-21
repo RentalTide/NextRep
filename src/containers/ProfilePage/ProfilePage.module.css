@@ -162,6 +162,18 @@
   }
 }
 
+.showAllListingsButton {
+  composes: buttonDefault from global;
+  width: auto;
+  min-height: 0;
+  padding: 8px 24px;
+  margin-top: 12px;
+
+  @media (--viewportMedium) {
+    margin-top: 0;
+  }
+}
+
 .withBioMissingAbove {
   /* Avoid extra borders in mobile when bio is missing */
   border-top: none;
